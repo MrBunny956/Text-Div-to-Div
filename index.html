@@ -1,0 +1,77 @@
+<html>
+<head>
+	<script src="http://localhost:9090/UX/StoryTellers/ReadWritter/libs/jquery/jquery-1.7.2.min.js"></script>
+	<script src="http://localhost:9090/UX/StoryTellers/ReadWritter/libs/knockout/knockout-2.2.1.min.js"></script>
+</head>
+<body>
+	<textarea style="float:left" data-bind="value: dialog, valueUpdate: 'afterkeydown'" rows="50" cols="50"></textarea>
+	<div id="content">
+		<div id="page" class="page" data-bind="template: { name: 'template'}">
+		</div>
+	</div>
+</body>
+
+<script type="text/html" id="template">
+	<div id="pageContent">
+		<img style="float:left" data-bind="attr:{src: images()[0].path }"></img>
+		<div id="text2" class="textDiv" data-bind="textBreak: dialog" ></div>
+		<img style="float:right" data-bind="attr:{src: images()[1].path }"></img>
+		<div id="text1" class="textDiv" data-bind="textBreak: dialog" ></div>
+	</div>
+</script>
+<style>
+	#pageContent{
+		width: 600px;
+		margin-left: auto;
+		margin-right: auto;
+	}
+</style>
+
+<script>
+	$(function(){
+		var viewModel = {
+			dialog: ko.observable("But I must explain to you how all this mistaken idea of denouncing pleasure and praising pain was born and I will give you a complete account of the system, and expound the actual teachings of the great explorer of the truth, the master-builder of human happiness. No one rejects, dislikes, or avoids pleasure itself, because it is pleasure, but because those who do not know how to pursue pleasure rationally encounter consequences that are extremely painful. Nor again is there anyone who loves or pursues or desires to obtain pain of itself, because it is pain, but because occasionally circumstances occur in which toil and pain can procure him some great pleasure. To take a trivial example, which of us ever undertakes laborious physical exercise, except to obtain some advantage from it? But who has any right to find fault with a man who chooses to enjoy a pleasure that has no annoying consequences, or one who avoids a pain that produces no resultant pleasure?"),
+			images: ko.observableArray([{path: "assets/cat1.jpg"},{path: "assets/cat2.jpg"}]),
+			templateNameKO: ko.observable("template1"),
+			templates: ko.observableArray([{templateName: "Basic", templateId: "template1"}, {templateName: "One Image", templateId: "template2"}]),
+		};
+		var basicStringBreak = function(element, valueAccessor)
+		{
+			var value = valueAccessor();
+			var valueUnwrapped = ko.utils.unwrapObservable(value);
+			
+			if(typeof valueUnwrapped != "string")
+				throw "textBreak binding only supports strings";
+				
+			var $textDivs = $(".textDiv"),
+				textLenght = valueUnwrapped.length,
+				length = $textDivs.length,
+				index = $textDivs.index(element),
+				start, end;
+				
+			end = (index + 1) * textLenght/length;
+			start = (index) * textLenght/length;
+			//Make sure we are not cutting off a word.
+			if(end != valueUnwrapped.length)
+				end = valueUnwrapped.lastIndexOf(" ", end);
+			
+			if(start != 0)
+				start = valueUnwrapped.lastIndexOf(" ", start);
+			
+			$(element).text(valueUnwrapped.slice(start, end));
+		};
+		ko.bindingHandlers.textBreak = {
+			init: basicStringBreak,
+			update: basicStringBreak
+		}
+		viewModel.changeTemplate = function(template){
+			viewModel.templateNameKO(template.templateId);
+		}
+		viewModel.templateName = function(){
+			return viewModel.templateNameKO();
+		}
+		
+		ko.applyBindings(viewModel);	
+	});
+</script>
+</html>
